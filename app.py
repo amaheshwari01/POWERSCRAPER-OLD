@@ -1,6 +1,7 @@
 # # import main Flask class and request object
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import ps_scrape as ps_scrape
+import json
 # # create the Flask app
 app = Flask(__name__)
 
@@ -17,7 +18,8 @@ def home():
         a = request.form.get('act')
         data = (ps_scrape.aall(p, a))
         # print(data)
-        return ((str(data)))
+        # return (jsonify(data))
+        return ((json.dumps(data, indent=4)))
 
     # otherwise handle the GET request
     return '''<form method="POST"><div><label>psw: <input type="text" name="pw"></label></div><div><label>act: <input type="text" name="act"></label></div><input type="submit" value="Submit"></form>'''
@@ -25,7 +27,7 @@ def home():
 
 if __name__ == '__main__':
     # run app in debug mode on port 5000
-    app.run(debug=True, port=5003)
+    app.run(debug=True)
 
 # from flask import Flask
 # app = Flask(__name__)

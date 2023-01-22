@@ -4,7 +4,9 @@ import requests
 from bs4 import BeautifulSoup
 import datetime
 import re
+import traceback
 import json
+import pprint
 x = datetime.datetime.now()
 
 cookies = {
@@ -58,10 +60,11 @@ url = "https://vcsnet.powerschool.com/guardian/home.html"
 
 student = {
     'classes': {
-
+        's1': {},
+        's2': {},
     }
 }
-
+c2 = {}
 global payload
 
 session = requests.Session()
@@ -161,7 +164,8 @@ def get_cgrades(sid, stuid, sem):
             grades[grades[i]["category"]+"Avaliable"] = tp
             tp = grades[grades[i]["category"]+"Score"]+grades[i]["score"]
             grades[grades[i]["category"]+"Score"] = tp
-
+    # for i in grades:
+    #     if str(i)!=i
         # if type(i) = int
         # tp = (i["category"])  # [((i["category"]))+"Avaliable"]
     # grades[str(i["category"])+"Avaliable"] = tp
@@ -171,10 +175,10 @@ def get_cgrades(sid, stuid, sem):
 def getids():
     idfound = False
 
-    for i in student['classes']:
-        if (student['classes'][i]['s1'] != "n/a"):
+    for i in student['classes']['s1']:
+        if (student['classes']['s1'][i]['abs'] != "n/a"):
             uu = ("https://vcsnet.powerschool.com/guardian/" +
-                  student['classes'][i]['s2link'])
+                  student['classes']['s1'][i]['glink'])
             r = session.get(uu)
             s = BeautifulSoup(r.text, 'html.parser')
             for id in s.find_all('div'):
@@ -186,101 +190,48 @@ def getids():
 
                 if (id.get('data-sectionid') != None):
                     # print(id.get('data-ng-init').split("'")[1][3:])
-                    student['classes'][i]['sid'] = id.get('data-sectionid')
+                    student['classes']['s1'][i]['sid'] = id.get(
+                        'data-sectionid')
+    for i in student['classes']['s2']:
+        if (student['classes']['s2'][i]['abs'] != "n/a"):
+            uu = ("https://vcsnet.powerschool.com/guardian/" +
+                  student['classes']['s2'][i]['glink'])
+            r = session.get(uu)
+            s = BeautifulSoup(r.text, 'html.parser')
+            for id in s.find_all('div'):
+
+                if (id.get('data-sectionid') != None):
+                    # print(id.get('data-ng-init').split("'")[1][3:])
+                    student['classes']['s2'][i]['sid'] = id.get(
+                        'data-sectionid')
 
 
 def updateClassGrades():
-    getids()
-    for i in student['classes']:
-        if (student['classes'][i]['s1'] != "n/a"):
-            # try:
-            if (student['classes'][i]['s1'] != "i"):
-                student['classes'][i]['S1G'] = get_cgrades(
-                    student['classes'][i]['sid'], student['id'], 'S1')
+    for i in student['classes']['s1']:
+        if (student['classes']['s1'][i]['abs'] != "n/a"):
+            try:
+                if (student['classes']['s1'][i]['grade'] != "[ i ]"):
+                    student['classes']['s1'][i]['GrList'] = get_cgrades(
+                        student['classes']['s1'][i]['sid'], student['id'], 'S1')
+            except:
+                traceback.print_exc()
+                # with open("grades.json", "w") as outfile:
+                #     json.dump(student, outfile)
+                print(i)
+                return
+    for i in student['classes']['s2']:
+        if (student['classes']['s2'][i]['abs'] != "n/a"):
+            try:
+                if (student['classes']['s2'][i]['grade'] != "[ i ]"):
+                    student['classes']['s2'][i]['GrList'] = get_cgrades(
+                        student['classes']['s2'][i]['sid'], student['id'], 'S2')
+            except:
+                traceback.print_exc()
+                # with open("grades.json", "w") as outfile:
+                #     json.dump(student, outfile)
+                print(i)
 
-            # except:
-            #     print("S1", student['classes'][i])
-            #     break
-            # try:
-            if (student['classes'][i]['s2'] != "i"):
-                student['classes'][i]['S2G'] = get_cgrades(
-                    student['classes'][i]['sid'], student['id'], 'S2')
-
-
-def updateGradesDict():
-    r = session.get(url)
-    s = BeautifulSoup(r.text, 'html.parser')
-    grades = s.find_all("tr")
-    for i in grades:
-        linksoup = BeautifulSoup(str(i), 'html.parser')
-        classLinks = []
-        for link in linksoup.find_all('a'):
-            classLinks.append(link.get('href'))
-        period = (i.text.split())
-        modperiod = period.copy()
-
-        if (period[0][0].isdigit()):
-
-            for i in period:
-                if (i.find("Not") != -1 or i.find("avaliable") != -1 or i.find(".") != -1 or i.find("]") != -1 or i.find("[") != -1):
-                    modperiod.remove(i)
-                elif (i == 'available'):
-                    modperiod.remove(i)
-            # print(modperiod)
-            rtchr = session.get(
-                "https://vcsnet.powerschool.com/guardian/"+classLinks[0])
-            tchr = BeautifulSoup(rtchr.text, 'html.parser')
-            tchrarr = tchr.text.split("\n")
-            tchrarr.pop(0)
-            tchrarr.pop(0)
-            tchrarr.pop(0)
-            tchrarr.pop(len(tchrarr)-1)
-            tchrarr.pop(len(tchrarr)-1)
-            # print(tchrarr)
-            modperiod += tchrarr
-            sorted = re.split("Email: | Email |,| - Rm:| Name: ",
-                              (' '.join(modperiod)))
-            # print(sorted)
-            sorted.pop(1)
-            perclass = sorted[0].split(" ", 1)
-            sorted.pop(0)
-            sorted = perclass+sorted
-            sorted.pop(2)
-
-            # print(sorted)
-            if (sorted[1] == "Open Period"):
-                student['classes'][sorted[0]] = {
-                    'class': sorted[1],
-                    'teacher': "n/a",
-                    'email': "n/a",
-                    'rooom': "n/a",
-                    's1': "n/a",
-                    's2': "n/a",
-                    'abs': "n/a",
-                    'tardy': "n/a",
-                    's1link': "n/a",
-                    's2link': "n/a", }
-
-            else:
-                stuff = sorted[2].split(" ")
-                stuff.pop(0)
-                sorted = sorted+stuff
-                sorted.pop(2)
-                # print(stuff)
-                # print(sorted)
-
-                student['classes'][sorted[0]] = {
-                    'class': sorted[1],
-                    'teacher': sorted[2],
-                    'email': sorted[3],
-                    'rooom': sorted[4],
-                    's1': sorted[5],
-                    's2': sorted[6],
-                    'abs': sorted[7],
-                    'tardy': sorted[8],
-                    's1link': classLinks[2],
-                    's2link': classLinks[3], }
-    updateClassGrades()
+                return
 
 
 def getSchedule():
@@ -297,15 +248,228 @@ def getSchedule():
         print(i)
 
 
-# updateGradesDict()
+def upClass():
+    r = session.get(url)
+    s = BeautifulSoup(r.text, 'html.parser')
+    grades = s.find_all("tr")
+    for z in grades:
+        linksoup = BeautifulSoup(str(z), 'html.parser')
+        classLinks = []
+        for link in linksoup.find_all('a'):
+            classLinks.append(link.get('href'))
+
+        period = (z.text.split())
+
+        if (period[0][0].isdigit()):
+
+            dd = ((z.find_all("td")))
+            xy = []
+            for y in dd:
+                # print(y.text.strip()+"\"")
+                xy += (y.text.strip().split("\xa0"))
+
+            rem = ["", " ", ".", "-", "Not available", 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+                   'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '\xa0']
+
+            res = [i for i in xy if i not in rem]
+            rtchr = session.get(
+                "https://vcsnet.powerschool.com/guardian/"+classLinks[0])
+            # print(rtchr)
+            if (rtchr.status_code != 200):
+                classLinks.pop(0)
+                rtchr = session.get(
+                    "https://vcsnet.powerschool.com/guardian/"+classLinks[0])
+            tchr = BeautifulSoup(rtchr.text, 'html.parser')
+            tchrarr = tchr.text.split("\n")
+            tchrarr = [i for i in tchrarr if i not in rem]
+
+            # print(tchrarr,)
+            # res += tchrarr
+            res.append(tchrarr[0][6:])
+            res.append(tchrarr[1][7:])
+            res += classLinks[2:4]
+            if (c2.__contains__(period[0][0:4]+" S")):
+                c2[period[0][0:4]+" S1"] = c2[period[0][0:4]+" S"]
+                c2.pop(period[0][0:4]+" S")
+                c2[period[0][0:4]+" S2"] = res
+            else:
+                c2[period[0][0:4]+" S"] = res
+
+
+def classDict():
+    # print
+    for i in c2:
+        # print(i)
+        c = i.split(" ")
+        # print(c)
+        if (c[1] == "S"):
+            if (c2[i][1] == "Open Period"):
+                student['classes']['s1'][i] = {
+                    'class': c2[i][1],
+                    'teacher': "n/a",
+                    'email': "n/a",
+                    'rooom': "n/a",
+                    'grade': "n/a",
+                    'abs': "n/a",
+                    'tardy': "n/a",
+                    'glink': "n/a",
+                }
+                student['classes']['s2'][i] = {
+                    'class': c2[i][1],
+                    'teacher': "n/a",
+                    'email': "n/a",
+                    'rooom': "n/a",
+                    'grade': "n/a",
+                    'abs': "n/a",
+                    'tardy': "n/a",
+                    'glink': "n/a",
+                }
+            else:
+                student['classes']['s1'][i] = {
+                    'class': c2[i][1],
+                    'teacher': c2[i][8],
+                    'email': c2[i][9],
+                    'rooom': c2[i][3],
+                    'grade': c2[i][4],
+                    'abs': c2[i][6],
+                    'tardy': c2[i][7],
+                    'glink': c2[i][10],
+                }
+                student['classes']['s2'][i] = {
+                    'class': c2[i][1],
+                    'teacher': c2[i][8],
+                    'email': c2[i][9],
+                    'rooom': c2[i][3],
+                    'grade': c2[i][5],
+                    'abs': c2[i][6],
+                    'tardy': c2[i][7],
+                    'glink': c2[i][11],
+                }
+        elif (c[1] == "S1"):
+            student['classes']['s1'][i] = {
+                'class': c2[i][1],
+                'teacher': c2[i][7],
+                'email': c2[i][8],
+                'rooom': c2[i][3],
+                'grade': c2[i][4],
+                'abs': c2[i][5],
+                'tardy': c2[i][6],
+                'glink': c2[i][9],
+
+            }
+        elif (c[1] == "S2"):
+            student['classes']['s2'][i] = {
+                'class': c2[i][1],
+                'teacher': c2[i][7],
+                'email': c2[i][8],
+                'rooom': c2[i][3],
+                'grade': c2[i][4],
+                'abs': c2[i][5],
+                'tardy': c2[i][6],
+                'glink': c2[i][9],
+            }
+
+
+def clr():
+    student = {
+        'classes': {
+            's1': {},
+            's2': {},
+        }
+    }
+
+
 def aall(pw, act):
+    clr()
     payload = {'account': act,
                'pw': pw,
                }
     result = session.post(url, data=payload)
 
-    updateGradesDict()
-    return (student)
+    upClass()
+    # print("\n".join(c2))
+    classDict()
+    getids()
+    updateClassGrades()
+    # pprint.pprint(student)
+    with open("grades.json", "w") as outfile:
+        json.dump(student, outfile)
+    return ((student))
 
 
 # Data to be written
+
+
+# def updateGradesDict():
+#     r = session.get(url)
+#     s = BeautifulSoup(r.text, 'html.parser')
+#     grades = s.find_all("tr")
+#     for i in grades:
+#         linksoup = BeautifulSoup(str(i), 'html.parser')
+#         classLinks = []
+#         for link in linksoup.find_all('a'):
+#             classLinks.append(link.get('href'))
+#         period = (i.text.split())
+#         modperiod = period.copy()
+
+#         if (period[0][0].isdigit()):
+
+#             for i in period:
+#                 if (i.find("Not") != -1 or i.find("avaliable") != -1 or i.find(".") != -1 or i.find("]") != -1 or i.find("[") != -1):
+#                     modperiod.remove(i)
+#                 elif (i == 'available'):
+#                     modperiod.remove(i)
+#             # print(modperiod)
+#             rtchr = session.get(
+#                 "https://vcsnet.powerschool.com/guardian/"+classLinks[0])
+#             tchr = BeautifulSoup(rtchr.text, 'html.parser')
+#             tchrarr = tchr.text.split("\n")
+#             # tchrarr.pop(0)
+#             # tchrarr.pop(0)
+#             # tchrarr.pop(0)
+#             tchrarr.pop(len(tchrarr)-1)
+#             tchrarr.pop(len(tchrarr)-1)
+#             # print(tchrarr)
+#             modperiod += tchrarr
+#             sorted = re.split("Email: | Email |,| - Rm:| Name: ",
+#                               (' '.join(modperiod)))
+#             # print(sorted)
+#             sorted.pop(1)
+#             perclass = sorted[0].split(" ", 1)
+#             sorted.pop(0)
+#             sorted = perclass+sorted
+#             sorted.pop(2)
+
+#             # print(sorted)
+#             if (sorted[1] == "Open Period"):
+#                 student['classes'][sorted[0]] = {
+#                     'class': sorted[1],
+#                     'teacher': "n/a",
+#                     'email': "n/a",
+#                     'rooom': "n/a",
+#                     's1': "n/a",
+#                     's2': "n/a",
+#                     'abs': "n/a",
+#                     'tardy': "n/a",
+#                     's1link': "n/a",
+#                     's2link': "n/a", }
+
+#             else:
+#                 stuff = sorted[2].split(" ")
+#                 stuff.pop(0)
+#                 sorted = sorted+stuff
+#                 sorted.pop(2)
+#                 # print(stuff)
+#                 # print(sorted)
+
+#                 student['classes'][sorted[0]] = {
+#                     'class': sorted[1],
+#                     'teacher': sorted[2],
+#                     'email': sorted[3],
+#                     'rooom': sorted[4],
+#                     's1': sorted[5],
+#                     's2': sorted[6],
+#                     'abs': sorted[7],
+#                     'tardy': sorted[8],
+    # }
+#     # updateClassGrades()
