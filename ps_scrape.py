@@ -3,10 +3,8 @@
 import requests
 from bs4 import BeautifulSoup
 import datetime
-import re
 import traceback
 import json
-import pprint
 x = datetime.datetime.now()
 
 cookies = {
@@ -65,11 +63,11 @@ student = {
     }
 }
 c2 = {}
-global payload
+# global payload
 
-session = requests.Session()
-
-global result
+# global session
+# session = requests.Session()
+# global result
 
 
 def get_cgrades(sid, stuid, sem):
@@ -95,10 +93,11 @@ def get_cgrades(sid, stuid, sem):
     # print(response.text)
     # print(dictGrade[2]['_assignmentsections'][0]['name'])
     grades = {}
-    n = 0
+    z = 0
     cats = []
     for i in dictGrade:
-        n += 1
+        z += 1
+        n = str(z)
         cats.append([i['_assignmentsections'][0]['_assignmentcategoryassociations']
                     [0]['_teachercategory']['name']])
         grades[i['_assignmentsections'][0]
@@ -110,7 +109,7 @@ def get_cgrades(sid, stuid, sem):
                 grades[n] = {
                     'name': i['_assignmentsections'][0]['name'],
                     'ddaate': i['_assignmentsections'][0]['duedate'],
-                    'ingrade': not i['_assignmentsections'][0]['iscountedinfinalgrade'],
+                    'ingrade':  i['_assignmentsections'][0]['iscountedinfinalgrade'],
                     'score': (i['_assignmentsections'][0]['_assignmentscores'][0]["scorepoints"]),
                     'totalp': i['_assignmentsections'][0]['totalpointvalue'],
                     'category': i['_assignmentsections'][0]['_assignmentcategoryassociations'][0]['_teachercategory']['name'],
@@ -125,7 +124,7 @@ def get_cgrades(sid, stuid, sem):
                 grades[n] = {
                     'name': i['_assignmentsections'][0]['name'],
                     'ddaate': i['_assignmentsections'][0]['duedate'],
-                    'ingrade': not i['_assignmentsections'][0]['iscountedinfinalgrade'],
+                    'ingrade':  i['_assignmentsections'][0]['iscountedinfinalgrade'],
                     'score': 'Exempt',
                     'totalp': i['_assignmentsections'][0]['totalpointvalue'],
                     'category': i['_assignmentsections'][0]['_assignmentcategoryassociations'][0]['_teachercategory']['name'],
@@ -140,7 +139,7 @@ def get_cgrades(sid, stuid, sem):
             grades[n] = {
                 'name': i['_assignmentsections'][0]['name'],
                 'ddaate': i['_assignmentsections'][0]['duedate'],
-                'ingrade': not i['_assignmentsections'][0]['iscountedinfinalgrade'],
+                'ingrade': i['_assignmentsections'][0]['iscountedinfinalgrade'],
                 'score': 'n/e',
                 'totalp': i['_assignmentsections'][0]['totalpointvalue'],
                 'category': i['_assignmentsections'][0]['_assignmentcategoryassociations'][0]['_teachercategory']['name'],
@@ -159,7 +158,7 @@ def get_cgrades(sid, stuid, sem):
 
     for i in grades:
         # see if i is an int
-        if type(i) == int and grades[i]["score"] != "Exempt" and grades[i]["score"] != "n/e":
+        if i.isnumeric() and grades[i]["score"] != "Exempt" and grades[i]["score"] != "n/e" and grades[i]["ingrade"] == True:
             tp = grades[grades[i]["category"]+"Avaliable"]+grades[i]["totalp"]
             grades[grades[i]["category"]+"Avaliable"] = tp
             tp = grades[grades[i]["category"]+"Score"]+grades[i]["score"]
@@ -192,6 +191,9 @@ def getids():
                     # print(id.get('data-ng-init').split("'")[1][3:])
                     student['classes']['s1'][i]['sid'] = id.get(
                         'data-sectionid')
+                    student['classes']['s1'][i]['GrList'] = get_cgrades(
+                        student['classes']['s1'][i]['sid'], student['id'], 'S1')
+                    break
     for i in student['classes']['s2']:
         if (student['classes']['s2'][i]['abs'] != "n/a"):
             uu = ("https://vcsnet.powerschool.com/guardian/" +
@@ -204,15 +206,18 @@ def getids():
                     # print(id.get('data-ng-init').split("'")[1][3:])
                     student['classes']['s2'][i]['sid'] = id.get(
                         'data-sectionid')
+                    student['classes']['s2'][i]['GrList'] = get_cgrades(
+                        student['classes']['s2'][i]['sid'], student['id'], 'S2')
+                    break
 
 
 def updateClassGrades():
     for i in student['classes']['s1']:
         if (student['classes']['s1'][i]['abs'] != "n/a"):
             try:
-                if (student['classes']['s1'][i]['grade'] != "[ i ]"):
-                    student['classes']['s1'][i]['GrList'] = get_cgrades(
-                        student['classes']['s1'][i]['sid'], student['id'], 'S1')
+                # if (student['classes']['s1'][i]['grade'] != "[ i ]"):
+                student['classes']['s1'][i]['GrList'] = get_cgrades(
+                    student['classes']['s1'][i]['sid'], student['id'], 'S1')
             except:
                 traceback.print_exc()
                 # with open("grades.json", "w") as outfile:
@@ -371,12 +376,14 @@ def classDict():
 
 
 def clr():
-    student = {
-        'classes': {
-            's1': {},
-            's2': {},
-        }
+    # for i in student['classes']:
+    student.clear()
+    student['classes'] = {
+        's1': {},
+        's2': {},
+
     }
+    c2.clear()
 
 
 def aall(pw, act):
@@ -384,13 +391,18 @@ def aall(pw, act):
     payload = {'account': act,
                'pw': pw,
                }
-    result = session.post(url, data=payload)
+
+    global session
+    session = requests.Session()
+    print(session)
+    # session.cookies.clear()
+    session.post(url, data=payload)
 
     upClass()
     # print("\n".join(c2))
     classDict()
     getids()
-    updateClassGrades()
+    # updateClassGrades()
     # pprint.pprint(student)
     with open("grades.json", "w") as outfile:
         json.dump(student, outfile)
@@ -398,78 +410,3 @@ def aall(pw, act):
 
 
 # Data to be written
-
-
-# def updateGradesDict():
-#     r = session.get(url)
-#     s = BeautifulSoup(r.text, 'html.parser')
-#     grades = s.find_all("tr")
-#     for i in grades:
-#         linksoup = BeautifulSoup(str(i), 'html.parser')
-#         classLinks = []
-#         for link in linksoup.find_all('a'):
-#             classLinks.append(link.get('href'))
-#         period = (i.text.split())
-#         modperiod = period.copy()
-
-#         if (period[0][0].isdigit()):
-
-#             for i in period:
-#                 if (i.find("Not") != -1 or i.find("avaliable") != -1 or i.find(".") != -1 or i.find("]") != -1 or i.find("[") != -1):
-#                     modperiod.remove(i)
-#                 elif (i == 'available'):
-#                     modperiod.remove(i)
-#             # print(modperiod)
-#             rtchr = session.get(
-#                 "https://vcsnet.powerschool.com/guardian/"+classLinks[0])
-#             tchr = BeautifulSoup(rtchr.text, 'html.parser')
-#             tchrarr = tchr.text.split("\n")
-#             # tchrarr.pop(0)
-#             # tchrarr.pop(0)
-#             # tchrarr.pop(0)
-#             tchrarr.pop(len(tchrarr)-1)
-#             tchrarr.pop(len(tchrarr)-1)
-#             # print(tchrarr)
-#             modperiod += tchrarr
-#             sorted = re.split("Email: | Email |,| - Rm:| Name: ",
-#                               (' '.join(modperiod)))
-#             # print(sorted)
-#             sorted.pop(1)
-#             perclass = sorted[0].split(" ", 1)
-#             sorted.pop(0)
-#             sorted = perclass+sorted
-#             sorted.pop(2)
-
-#             # print(sorted)
-#             if (sorted[1] == "Open Period"):
-#                 student['classes'][sorted[0]] = {
-#                     'class': sorted[1],
-#                     'teacher': "n/a",
-#                     'email': "n/a",
-#                     'rooom': "n/a",
-#                     's1': "n/a",
-#                     's2': "n/a",
-#                     'abs': "n/a",
-#                     'tardy': "n/a",
-#                     's1link': "n/a",
-#                     's2link': "n/a", }
-
-#             else:
-#                 stuff = sorted[2].split(" ")
-#                 stuff.pop(0)
-#                 sorted = sorted+stuff
-#                 sorted.pop(2)
-#                 # print(stuff)
-#                 # print(sorted)
-
-#                 student['classes'][sorted[0]] = {
-#                     'class': sorted[1],
-#                     'teacher': sorted[2],
-#                     'email': sorted[3],
-#                     'rooom': sorted[4],
-#                     's1': sorted[5],
-#                     's2': sorted[6],
-#                     'abs': sorted[7],
-#                     'tardy': sorted[8],
-    # }
-#     # updateClassGrades()

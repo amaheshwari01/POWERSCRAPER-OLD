@@ -17,9 +17,8 @@ def home():
         p = request.form.get('pw')
         a = request.form.get('act')
         data = (ps_scrape.aall(p, a))
-        # print(data)
-        # return (jsonify(data))
-        return ((json.dumps(data, indent=4)))
+        return (jsonify(data))
+        # return ((json.dumps(data, indent=4)))
 
     # otherwise handle the GET request
     return '''<form method="POST"><div><label>psw: <input type="text" name="pw"></label></div><div><label>act: <input type="text" name="act"></label></div><input type="submit" value="Submit"></form>'''
