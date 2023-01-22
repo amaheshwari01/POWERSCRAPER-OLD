@@ -239,20 +239,6 @@ def updateClassGrades():
                 return
 
 
-def getSchedule():
-    dateurl = "https://vcsnet.powerschool.com/guardian/alerts/bellschedulealert.html?selectedDate=" + str(x.month)+"/"+str(x.day)+"/"+str(x.year) + \
-        "&dayDisplay=inline&_=1673838736964"
-    r = session.get(dateurl)
-    datepage = BeautifulSoup(r.text, 'html.parser')
-    times = (' '.join(datepage.text.strip().split('\n')).split("  "))
-    # print(times)
-    for i in range(4):
-        times.pop(2)
-
-    for i in times:
-        print(i)
-
-
 def upClass():
     r = session.get(url)
     s = BeautifulSoup(r.text, 'html.parser')
@@ -384,6 +370,30 @@ def clr():
 
     }
     c2.clear()
+
+
+def getSchedule(pw, act):
+    clr()
+    payload = {'account': act,
+               'pw': pw,
+               }
+
+    global session
+    session = requests.Session()
+    print(session)
+    # session.cookies.clear()
+    session.post(url, data=payload)
+    dateurl = "https://vcsnet.powerschool.com/guardian/alerts/bellschedulealert.html?selectedDate=" + str(x.month)+"/"+str(x.day+1)+"/"+str(x.year) + \
+        "&dayDisplay=inline&_=1673838736964"
+    r = session.get(dateurl)
+    datepage = BeautifulSoup(r.text, 'html.parser')
+    times = (' '.join(datepage.text.strip().split('\n')).split("  "))
+    # print(times)
+    for i in range(4):
+        times.pop(2)
+    if (len(times) > 10):
+        return "Invalid Login"
+    return times
 
 
 def aall(pw, act):

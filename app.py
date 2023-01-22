@@ -16,12 +16,34 @@ def home():
     if request.method == 'POST':
         p = request.form.get('pw')
         a = request.form.get('act')
-        data = (ps_scrape.aall(p, a))
-        return (jsonify(data))
+        r = request.form.get('req')
+        if r == 'grades':
+            data = (ps_scrape.aall(p, a))
+            return (jsonify(data))
+        elif r == 'schedule':
+            data = (ps_scrape.getSchedule(p, a))
+            return ((data))
+
+        # data = (ps_scrape.aall(p, a))
         # return ((json.dumps(data, indent=4)))
 
     # otherwise handle the GET request
-    return '''<form method="POST"><div><label>psw: <input type="text" name="pw"></label></div><div><label>act: <input type="text" name="act"></label></div><input type="submit" value="Submit"></form>'''
+    return '''<form method="POST">
+        
+        <div>
+        <label>username: <input type="username" name="act"></label>
+        </div>
+        <div>
+        <label>password: <input type="password" name="pw"></label>
+        </div>
+        <select name="req">
+        <option value="grades">Grades</option>
+        <option value="schedule">Schedule</option>
+        <input type="submit" value="Submit">
+        </form>
+        
+ 
+</select>'''
 
 
 if __name__ == '__main__':
