@@ -98,12 +98,12 @@ def get_cgrades(sid, stuid, sem):
     for i in dictGrade:
         z += 1
         n = str(z)
-        cats.append([i['_assignmentsections'][0]['_assignmentcategoryassociations']
-                    [0]['_teachercategory']['name']])
-        grades[i['_assignmentsections'][0]
-               ['_assignmentcategoryassociations'][0]['_teachercategory']['name']+"Avaliable"] = 0
-        grades[i['_assignmentsections'][0]
-               ['_assignmentcategoryassociations'][0]['_teachercategory']['name']+"Score"] = 0
+        cc = i['_assignmentsections'][0]['_assignmentcategoryassociations'][0]['_teachercategory']['name'].replace(
+            "/", ",")
+        cats.append(cc)
+        grades[cc+"Avaliable"] = 0
+        grades[cc+"Score"] = 0
+
         try:
             if (not i['_assignmentsections'][0]['_assignmentscores'][0]["isexempt"]):
                 grades[n] = {
@@ -112,7 +112,7 @@ def get_cgrades(sid, stuid, sem):
                     'ingrade':  i['_assignmentsections'][0]['iscountedinfinalgrade'],
                     'score': (i['_assignmentsections'][0]['_assignmentscores'][0]["scorepoints"]),
                     'totalp': i['_assignmentsections'][0]['totalpointvalue'],
-                    'category': i['_assignmentsections'][0]['_assignmentcategoryassociations'][0]['_teachercategory']['name'],
+                    'category': cc,
                     'late': i['_assignmentsections'][0]['_assignmentscores'][0]["islate"],
                     'exempt': i['_assignmentsections'][0]['_assignmentscores'][0]["isexempt"],
                     'absent': i['_assignmentsections'][0]['_assignmentscores'][0]["isabsent"],
@@ -127,7 +127,7 @@ def get_cgrades(sid, stuid, sem):
                     'ingrade':  i['_assignmentsections'][0]['iscountedinfinalgrade'],
                     'score': 'Exempt',
                     'totalp': i['_assignmentsections'][0]['totalpointvalue'],
-                    'category': i['_assignmentsections'][0]['_assignmentcategoryassociations'][0]['_teachercategory']['name'],
+                    'category': cc,
                     'late': i['_assignmentsections'][0]['_assignmentscores'][0]["islate"],
                     'exempt': i['_assignmentsections'][0]['_assignmentscores'][0]["isexempt"],
                     'absent': i['_assignmentsections'][0]['_assignmentscores'][0]["isabsent"],
@@ -142,7 +142,7 @@ def get_cgrades(sid, stuid, sem):
                 'ingrade': i['_assignmentsections'][0]['iscountedinfinalgrade'],
                 'score': 'n/e',
                 'totalp': i['_assignmentsections'][0]['totalpointvalue'],
-                'category': i['_assignmentsections'][0]['_assignmentcategoryassociations'][0]['_teachercategory']['name'],
+                'category': cc,
                 'late': 'n/e',
                 'exempt': 'n/e',
                 'absent': 'n/e',
@@ -159,10 +159,10 @@ def get_cgrades(sid, stuid, sem):
     for i in grades:
         # see if i is an int
         if i.isnumeric() and grades[i]["score"] != "Exempt" and grades[i]["score"] != "n/e" and grades[i]["ingrade"] == True:
-            if (grades[i]["category"].contains("/")):
-                cat = grades[i]["category"].replace("/", ",")
-            else:
-                cat = grades[i]["category"]
+            # if (grades[i]["category"].find("/")):
+            #     cat = str(grades[i]["category"]).replace("/", ",")
+            # else:
+            cat = grades[i]["category"]
             tp = grades[cat+"Avaliable"]+grades[i]["totalp"]
             grades[cat+"Avaliable"] = tp
             tp = grades[cat+"Score"]+grades[i]["score"]
