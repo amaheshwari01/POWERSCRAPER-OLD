@@ -167,7 +167,7 @@ def get_cgrades(sid, stuid, sem):
             grades[cat+"Avaliable"] = tp
             tp = grades[cat+"Score"]+grades[i]["score"]
             grades[cat+"Score"] = tp
-        # for i in grades:
+        # for i in grades:cd powe
     #     if str(i)!=i
         # if type(i) = int
         # tp = (i["category"])  # [((i["category"]))+"Avaliable"]
