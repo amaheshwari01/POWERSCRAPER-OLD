@@ -159,11 +159,15 @@ def get_cgrades(sid, stuid, sem):
     for i in grades:
         # see if i is an int
         if i.isnumeric() and grades[i]["score"] != "Exempt" and grades[i]["score"] != "n/e" and grades[i]["ingrade"] == True:
-            tp = grades[grades[i]["category"]+"Avaliable"]+grades[i]["totalp"]
-            grades[grades[i]["category"]+"Avaliable"] = tp
-            tp = grades[grades[i]["category"]+"Score"]+grades[i]["score"]
-            grades[grades[i]["category"]+"Score"] = tp
-    # for i in grades:
+            if (grades[i]["category"].contains("/")):
+                cat = grades[i]["category"].replace("/", ",")
+            else:
+                cat = grades[i]["category"]
+            tp = grades[cat+"Avaliable"]+grades[i]["totalp"]
+            grades[cat+"Avaliable"] = tp
+            tp = grades[cat+"Score"]+grades[i]["score"]
+            grades[cat+"Score"] = tp
+        # for i in grades:
     #     if str(i)!=i
         # if type(i) = int
         # tp = (i["category"])  # [((i["category"]))+"Avaliable"]
