@@ -1,4 +1,5 @@
 # # import main Flask class and request object
+from flask_cors import CORS
 from flask import Flask, request, jsonify
 import ps_scrape as ps_scrape
 import json
@@ -8,6 +9,7 @@ app = Flask(__name__)
 # # allow both GET and POST requests
 
 # allow both GET and POST requests
+CORS(app)
 
 
 @app.route('/', methods=['GET', 'POST'])
