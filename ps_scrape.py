@@ -389,7 +389,7 @@ def getSchedule(pw, act):
     print(session)
     # session.cookies.clear()
     session.post(url, data=payload)
-    dateurl = "https://vcsnet.powerschool.com/guardian/alerts/bellschedulealert.html?selectedDate=" + str(x.month)+"/"+str(x.day+1)+"/"+str(x.year) + \
+    dateurl = "https://vcsnet.powerschool.com/guardian/alerts/bellschedulealert.html?selectedDate=" + str(x.month)+"/"+str(x.day)+"/"+str(x.year) + \
         "&dayDisplay=inline&_=1673838736964"
     r = session.get(dateurl)
     datepage = BeautifulSoup(r.text, 'html.parser')
