@@ -32,8 +32,8 @@ cookies = {
 }
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:108.0) Gecko/20100101 Firefox/108.0',
-    'Accept': 'application/json, text/plain, */*',
+    # 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:108.0) Gecko/20100101 Firefox/108.0',
+    # 'Accept': 'application/json, text/plain, */*',
     'Accept-Language': 'en-US,en;q=0.5',
     # 'Accept-Encoding': 'gzip, deflate, br',
     'Referer': 'https://vcsnet.powerschool.com/guardian/scores.html?frn=0312280514&fg=S1&schoolid=1',
@@ -95,11 +95,13 @@ def get_cgrades(sid, stuid, sem):
     grades = {}
     z = 0
     cats = []
-    for i in dictGrade:
+    for i in dictGrade.copy():
         z += 1
         n = str(z)
-        cc = i['_assignmentsections'][0]['_assignmentcategoryassociations'][0]['_teachercategory']['name'].replace(
-            "/", ",")
+        cc = i['_assignmentsections'][0]['_assignmentcategoryassociations'][0]['_teachercategory']['name']
+        if (cc == ("Master Assessment")):
+            cc = "Mastery Assessments"
+
         cats.append(cc)
         grades[cc+"Avaliable"] = 0
         grades[cc+"Score"] = 0
@@ -156,7 +158,7 @@ def get_cgrades(sid, stuid, sem):
     cats = [i for n, i in enumerate(cats) if i not in cats[:n]]
     grades['categories'] = cats
 
-    for i in grades:
+    for i in grades.copy():
         # see if i is an int
         if i.isnumeric() and grades[i]["score"] != "Exempt" and grades[i]["score"] != "n/e" and grades[i]["ingrade"] == True:
             # if (grades[i]["category"].find("/")):
@@ -178,7 +180,7 @@ def get_cgrades(sid, stuid, sem):
 def getids():
     idfound = False
 
-    for i in student['classes']['s1']:
+    for i in student['classes']['s1'].copy():
         if (student['classes']['s1'][i]['abs'] != "n/a"):
             uu = ("https://vcsnet.powerschool.com/guardian/" +
                   student['classes']['s1'][i]['glink'])
@@ -198,7 +200,7 @@ def getids():
                     student['classes']['s1'][i]['GrList'] = get_cgrades(
                         student['classes']['s1'][i]['sid'], student['id'], 'S1')
                     break
-    for i in student['classes']['s2']:
+    for i in student['classes']['s2'].copy():
         if (student['classes']['s2'][i]['abs'] != "n/a"):
             uu = ("https://vcsnet.powerschool.com/guardian/" +
                   student['classes']['s2'][i]['glink'])
@@ -216,7 +218,7 @@ def getids():
 
 
 def updateClassGrades():
-    for i in student['classes']['s1']:
+    for i in student['classes']['s1'].copy():
         if (student['classes']['s1'][i]['abs'] != "n/a"):
             try:
                 # if (student['classes']['s1'][i]['grade'] != "[ i ]"):
@@ -293,7 +295,7 @@ def upClass():
 
 def classDict():
     # print
-    for i in c2:
+    for i in c2.copy():
         # print(i)
         c = i.split(" ")
         # print(c)
