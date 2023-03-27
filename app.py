@@ -24,7 +24,9 @@ def home():
             return (jsonify(data))
         elif r == 'schedule':
             data = (ps_scrape.getSchedule(p, a))
-            return ((data))
+            if data=="I":
+                return "Record not found", 400
+            return (jsonify(data))
 
         # data = (ps_scrape.aall(p, a))
         # return ((json.dumps(data, indent=4)))

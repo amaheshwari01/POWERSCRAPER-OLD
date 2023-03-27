@@ -398,7 +398,7 @@ def getSchedule(pw, act):
     for i in range(4):
         times.pop(2)
     if (len(times) > 10):
-        return "Invalid Login"
+        return "I"
     return times
 
 
