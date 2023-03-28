@@ -54,14 +54,6 @@ headers = {
 # def all(pw, act):
 
 # import reques
-def represents_int(s):
-    try: 
-        int(s)
-    except ValueError:
-        return False
-    else:
-        return True
-
 url = "https://vcsnet.powerschool.com/guardian/home.html"
 
 student = {
@@ -296,7 +288,6 @@ def upClass():
             #         # res.append(i[6:])
             # res.append(tchrarr[0][6:])
             # res.append(tchrarr[1][7:])
-            res+=tchrarr
             res += classLinks
 
 
@@ -312,9 +303,7 @@ def upClass():
                         contains_substring = True
                         break
                 if not contains_substring:
-                    res.append(elem)    
-            if(not represents_int(res[6])):
-               res.pop(6)       
+                    res.append(elem)            
             if (c2.__contains__(period[0][0:4]+" S")):
                 c2[period[0][0:4]+" S1"] = c2[period[0][0:4]+" S"]
                 c2.pop(period[0][0:4]+" S")
@@ -448,13 +437,13 @@ def aall(pw, act):
 
     upClass()
     # print("\n".join(c2))
-    classDict()
-    getids()
-    # updateClassGrades()
-    # pprint.pprint(student)
-    with open("grades.json", "w") as outfile:
-        json.dump(student, outfile)
-    return ((student))
+    # classDict()
+    # getids()
+    # # updateClassGrades()
+    # # pprint.pprint(student)
+    # with open("grades.json", "w") as outfile:
+    #     json.dump(student, outfile)
+    return ((c2))
 
 
 # Data to be written
