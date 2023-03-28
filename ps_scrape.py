@@ -236,7 +236,7 @@ def updateClassGrades():
                 traceback.print_exc()
                 # with open("grades.json", "w") as outfile:
                 #     json.dump(student, outfile)
-                print(i)
+                # print(i)
                 return
     for i in student['classes']['s2']:
         if (student['classes']['s2'][i]['abs'] != "n/a"):
@@ -248,7 +248,7 @@ def updateClassGrades():
                 traceback.print_exc()
                 # with open("grades.json", "w") as outfile:
                 #     json.dump(student, outfile)
-                print(i)
+                # print(i)
 
                 return
 
@@ -321,8 +321,8 @@ def upClass():
                 c2[period[0][0:4]+" S2"] = res
             else:
                 c2[period[0][0:4]+" S"] = res
-        else:
-            print(period);
+        # else:
+        #     print(period);
 
 
 def classDict():
@@ -389,13 +389,13 @@ def classDict():
         elif (c[1] == "S2"):
             student['classes']['s2'][i] = {
                 'class': c2[i][1],
-                'teacher': c2[i][7],
-                'email': c2[i][8],
+                'teacher': c2[i][8],
+                'email': c2[i][9],
                 'rooom': c2[i][3],
                 'grade': c2[i][4],
-                'abs': c2[i][5],
+                'abs': c2[i][1],
                 'tardy': c2[i][6],
-                'glink': c2[i][9],
+                'glink': c2[i][10],
             }
 
 
@@ -447,13 +447,13 @@ def aall(pw, act):
     session.post(url, data=payload)
 
     upClass()
-    # print("\n".join(c2))
+    # # print("\n".join(c2))
     classDict()
     getids()
     # updateClassGrades()
-    # pprint.pprint(student)
-    with open("grades.json", "w") as outfile:
-        json.dump(student, outfile)
+    # # pprint.pprint(student)
+    # with open("grades.json", "w") as outfile:
+    #     json.dump(student, outfile)
     return ((student))
 
 
