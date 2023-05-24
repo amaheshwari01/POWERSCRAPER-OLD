@@ -55,12 +55,13 @@ headers = {
 
 # import reques
 def represents_int(s):
-    try: 
+    try:
         int(s)
     except ValueError:
         return False
     else:
         return True
+
 
 url = "https://vcsnet.powerschool.com/guardian/home.html"
 
@@ -236,7 +237,7 @@ def updateClassGrades():
                 traceback.print_exc()
                 # with open("grades.json", "w") as outfile:
                 #     json.dump(student, outfile)
-                # print(i)
+                print(i)
                 return
     for i in student['classes']['s2']:
         if (student['classes']['s2'][i]['abs'] != "n/a"):
@@ -248,7 +249,7 @@ def updateClassGrades():
                 traceback.print_exc()
                 # with open("grades.json", "w") as outfile:
                 #     json.dump(student, outfile)
-                # print(i)
+                print(i)
 
                 return
 
@@ -263,7 +264,7 @@ def upClass():
         classLinks = []
         for link in linksoup.find_all('a'):
             classLinks.append(link.get('href'))
-
+        print(classLinks)
         period = (z.text.split())
 
         # if (period[0][0].isdigit()):
@@ -276,7 +277,7 @@ def upClass():
                 xy += (y.text.strip().split("\xa0"))
 
             rem = ["", " ", ".", "-", "Not available", 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
-                   'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', "Email",'\xa0']
+                   'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', "Email", '\xa0']
 
             res = [i for i in xy if i not in rem]
             rtchr = session.get(
@@ -292,19 +293,18 @@ def upClass():
 
             # print(tchrarr,)
             # res += tchrarr
-         
+
             #         # res.append(i[6:])
             # res.append(tchrarr[0][6:])
             # res.append(tchrarr[1][7:])
-            res+=tchrarr
+            res += tchrarr
             res += classLinks
 
+            res2 = []
+            res2 += res
+            res = []
+            resrem = ["mailto", "teacherinfo", "attendancedates"]
 
-            res2=[]
-            res2+=res
-            res=[]
-            resrem=["begdate","mailto","teacherinfo","attendancedates"]
-       
             for elem in res2:
                 contains_substring = False
                 for substring in resrem:
@@ -312,17 +312,17 @@ def upClass():
                         contains_substring = True
                         break
                 if not contains_substring:
-                    res.append(elem)    
-            if(not represents_int(res[6])):
-               res.pop(6)       
+                    res.append(elem)
+            if (not represents_int(res[6])):
+                res.pop(6)
             if (c2.__contains__(period[0][0:4]+" S")):
                 c2[period[0][0:4]+" S1"] = c2[period[0][0:4]+" S"]
                 c2.pop(period[0][0:4]+" S")
                 c2[period[0][0:4]+" S2"] = res
             else:
                 c2[period[0][0:4]+" S"] = res
-        # else:
-        #     print(period);
+        else:
+            print(period)
 
 
 def classDict():
@@ -389,13 +389,13 @@ def classDict():
         elif (c[1] == "S2"):
             student['classes']['s2'][i] = {
                 'class': c2[i][1],
-                'teacher': c2[i][8],
-                'email': c2[i][9],
+                'teacher': c2[i][7],
+                'email': c2[i][8],
                 'rooom': c2[i][3],
                 'grade': c2[i][4],
-                'abs': c2[i][1],
+                'abs': c2[i][5],
                 'tardy': c2[i][6],
-                'glink': c2[i][10],
+                'glink': c2[i][9],
             }
 
 
@@ -418,7 +418,7 @@ def getSchedule(pw, act):
 
     global session
     session = requests.Session()
-    print(session)
+    # print(session)
     # session.cookies.clear()
     session.post(url, data=payload)
     dateurl = "https://vcsnet.powerschool.com/guardian/alerts/bellschedulealert.html?selectedDate=" + str(x.month)+"/"+str(x.day)+"/"+str(x.year) + \
@@ -447,13 +447,13 @@ def aall(pw, act):
     session.post(url, data=payload)
 
     upClass()
-    # # print("\n".join(c2))
+    # print("\n".join(c2))
     classDict()
     getids()
-    # updateClassGrades()
-    # # pprint.pprint(student)
-    # with open("grades.json", "w") as outfile:
-    #     json.dump(student, outfile)
+    updateClassGrades()
+    # pprint.pprint(student)
+    with open("grades.json", "w") as outfile:
+        json.dump(student, outfile)
     return ((student))
 
 
