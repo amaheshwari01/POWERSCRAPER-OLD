@@ -24,7 +24,7 @@ def home():
             return (jsonify(data))
         elif r == 'schedule':
             data = (ps_scrape.getSchedule(p, a))
-            if data=="I":
+            if data == "I":
                 return "Record not found", 400
             return (jsonify(data))
 
@@ -52,7 +52,7 @@ def home():
 
 if __name__ == '__main__':
     # run app in debug mode on port 5000
-    app.run(debug=True)
+    app.run(port=int(os.environ.get("PORT", 8080)), host='0.0.0.0', debug=True)
 
 # from flask import Flask
 # app = Flask(__name__)
